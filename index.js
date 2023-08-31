@@ -9,9 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-//const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.swu9d.mongodb.net/?retryWrites=true&w=majority`;
-const uri = ` mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kcqd2xp.mongodb.net/?retryWrites=true&w=majority`;
-
+const uri =
+   'mongodb+srv://database:tVNs5ygHmPOh9h4d@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority';
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
    serverApi: {
@@ -20,31 +19,25 @@ const client = new MongoClient(uri, {
       deprecationErrors: true,
    },
 });
-
 async function run() {
    try {
-      // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
+      await client.db('admin').command({ ping: 1 });
+      console.log('connect-M');
 
-      const menuCollection = client.db('bistroDb').collection('menu');
-      const reviewCollection = client.db('bistroDb').collection('reviews');
+      const menuCollection = client.db('bb-boss').collection('menu');
+      const reviewsCollection = client.db('bb-boss').collection('reviews');
 
       app.get('/menu', async (req, res) => {
          const result = await menuCollection.find().toArray();
          res.send(result);
       });
-
       app.get('/reviews', async (req, res) => {
-         const result = await reviewCollection.find().toArray();
+         const result = await reviewsCollection.find().toArray();
          res.send(result);
       });
-
-      // Send a ping to confirm a successful connection
-      await client.db('admin').command({ ping: 1 });
-      console.log('Pinged your deployment. You successfully connected to MongoDB!');
    } finally {
-      // Ensures that the client will close when you finish/error
-      // await client.close();
+      //await client.close();
    }
 }
 run().catch(console.dir);
@@ -54,5 +47,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-   console.log(`Bistro boss is sitting on port ${port}`);
+   console.log(`${port}`);
 });
