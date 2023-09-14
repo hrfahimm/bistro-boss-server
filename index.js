@@ -169,13 +169,11 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
 app.get("/", (req, res) => {
   res.send("boss is sitting");
 });
-
 app.listen(port, () => {
-  console.log(`Bistro boss is sitting on port ${port}`);
+  console.log(`${port}`);
 });
 
 /**
@@ -189,4 +187,18 @@ app.listen(port, () => {
  * app.patch('/users/:id')
  * app.put('/users/:id')
  * app.delete('/users/:id')
+ *
+ */
+
+/**
+ * DB_USER=database
+DB_PASS=tVNs5ygHmPOh9h4d
+MONGODB_URL=mongodb+srv://database:tVNs5ygHmPOh9h4d@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority
+ACCESS_TOKEN_SECRET=837ad07ef3629ee9244e31d7f22912830b9aeb64578b292a85d2b1465c3804247322f2d81fdb43d0e2c6259ac1e957f6f37d9546fa87444fe0bdbdf6d71f
+9c1d
+
+# // const uri = "mongodb+srv://database:tVNs5ygHmPOh9h4d@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority";
+# //mongodb+srv://database:<password>@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority
+ * 
+ * 
  */
