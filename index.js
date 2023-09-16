@@ -27,8 +27,10 @@ const verifyJWT = (req, res, next) => {
 };
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+//const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.swu9d.mongodb.net/?retryWrites=true&w=majority`;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority`;
 
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -39,16 +41,18 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const usersCollection = client.db("bb-boss").collection("users");
     const menuCollection = client.db("bb-boss").collection("menu");
-    const reviewsCollection = client.db("bb-boss").collection("reviews");
+    const reviewCollection = client.db("bb-boss").collection("reviews");
     const cartCollection = client.db("bb-boss").collection("carts");
-    const userCollection = client.db("bb-boss").collection("users");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+
       res.send({ token });
     });
 
@@ -71,20 +75,18 @@ async function run() {
 
     // users related apis
     app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
+      const result = await usersCollection.find().toArray();
       res.send(result);
     });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
-      const existingUser = await userCollection.findOne(query);
-
+      const existingUser = await usersCollection.findOne(query);
       if (existingUser) {
         return res.send({ message: "user already exists" });
       }
-
-      const result = await userCollection.insertOne(user);
+      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
 
@@ -99,7 +101,7 @@ async function run() {
       }
 
       const query = { email: email };
-      const user = await userCollection.findOne(query);
+      const user = await usersCollection.findOne(query);
       const result = { admin: user?.role === "admin" };
       res.send(result);
     });
@@ -114,7 +116,7 @@ async function run() {
         },
       };
 
-      const result = await userCollection.updateOne(filter, updateDoc);
+      const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
@@ -126,7 +128,7 @@ async function run() {
 
     // review related apis
     app.get("/reviews", async (req, res) => {
-      const result = await reviewsCollection.find().toArray();
+      const result = await reviewCollection.find().toArray();
       res.send(result);
     });
 
@@ -161,19 +163,22 @@ async function run() {
       res.send(result);
     });
 
+    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(" connected to MongoDB!");
+    console.log("M-DB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
 }
 run().catch(console.dir);
+
 app.get("/", (req, res) => {
   res.send("boss is sitting");
 });
+
 app.listen(port, () => {
-  console.log(`${port}`);
+  console.log(port);
 });
 
 /**
@@ -187,18 +192,4 @@ app.listen(port, () => {
  * app.patch('/users/:id')
  * app.put('/users/:id')
  * app.delete('/users/:id')
- *
- */
-
-/**
- * DB_USER=database
-DB_PASS=tVNs5ygHmPOh9h4d
-MONGODB_URL=mongodb+srv://database:tVNs5ygHmPOh9h4d@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority
-ACCESS_TOKEN_SECRET=837ad07ef3629ee9244e31d7f22912830b9aeb64578b292a85d2b1465c3804247322f2d81fdb43d0e2c6259ac1e957f6f37d9546fa87444fe0bdbdf6d71f
-9c1d
-
-# // const uri = "mongodb+srv://database:tVNs5ygHmPOh9h4d@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority";
-# //mongodb+srv://database:<password>@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority
- * 
- * 
  */
