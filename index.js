@@ -41,8 +41,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
     const usersCollection = client.db("bb-boss").collection("users");
@@ -175,7 +173,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("boss is sitting");
+  res.send("boss is  sitting on laptop");
 });
 
 app.listen(port, () => {
