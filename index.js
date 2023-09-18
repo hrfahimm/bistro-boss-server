@@ -89,6 +89,14 @@ async function run() {
       res.send(result);
     });
 
+    //delete user
+    app.delete("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // security layer: verifyJWT
     // email same
     // check admin
@@ -122,6 +130,21 @@ async function run() {
     // menu related apis
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
+    //only admin --------{{{{{verifyJWT, verifyAdmin, use this}}}}}
+    app.post("/menu", verifyJWT, verifyAdmin, async (req, res) => {
+      const newItem = req.body;
+      const result = await menuCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    //delete item
+    app.delete("/menu/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(query);
       res.send(result);
     });
 
