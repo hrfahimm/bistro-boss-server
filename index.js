@@ -170,11 +170,9 @@ async function run() {
         // cart collection apis
         app.get("/carts", verifyJWT, async (req, res) => {
             const email = req.query.email;
-
             if (!email) {
                 res.send([]);
             }
-
             const decodedEmail = req.decoded.email;
             if (email !== decodedEmail) {
                 return res
@@ -209,26 +207,69 @@ async function run() {
                 currency: "usd",
                 payment_method_types: ["card"],
             });
-
-            res.send({
-                clientSecret: paymentIntent.client_secret,
-            });
+            res.send({ clientSecret: paymentIntent.client_secret });
         });
 
         ///payment related api
-
         app.post("/payments", verifyJWT, async (req, res) => {
             const payment = req.body;
             const insertResult = await paymentCollection.insertOne(payment);
-
             const query = {
                 _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
             };
             const deleteResult = await cartCollection.deleteMany(query);
-
             res.send({ insertResult, deleteResult });
         });
 
+        app.get("/admin-stats", verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await usersCollection.estimatedDocumentCount();
+            const products = await menuCollection.estimatedDocumentCount();
+            const orders = await paymentCollection.estimatedDocumentCount();
+            const payments = await paymentCollection.find().toArray();
+            const revenue = payments.reduce(
+                (sum, payment) => sum + payment.price,
+                0
+            );
+            res.send({ users, products, orders, revenue });
+        });
+
+        //
+        //
+        //
+        app.get("/order-stats", async (req, res) => {
+            const pipeline = [
+                {
+                    $lookup: {
+                        from: "menu",
+                        localField: "menuItems",
+                        foreignField: "_id",
+                        as: "menuItemsData",
+                    },
+                },
+                {
+                    $unwind: "$menuItemsData",
+                },
+                {
+                    $group: {
+                        _id: "$menuItemsData.category",
+                        count: { $sum: 1 },
+                        total: { $sum: "$menuItemsData.price" },
+                    },
+                },
+                {
+                    $project: {
+                        category: "$_id",
+                        count: 1,
+                        total: { $round: ["$total", 2] },
+                        _id: 0,
+                    },
+                },
+            ];
+        });
+
+        //
+        //
+        //
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("M-DB!");
