@@ -33,7 +33,6 @@ const verifyJWT = (req, res, next) => {
 };
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-//const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.swu9d.mongodb.net/?retryWrites=true&w=majority`;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.prjizah.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -79,7 +78,6 @@ async function run() {
 
         /**
          *
-         * database.tVNs5ygHmPOh9h4d.sk_test_51Ns4M6E2gEZKNvl8CCwj8x0HLOhOUynj8EayAy6LAtuPCdD4RQnFdyZSCiX37GwuaIuSVBBqJ54prsyrZd9WGN6T00jL7GDFsk
          * 0. do not show secure links to those who should not see the links
          * 1. use jwt token: verifyJWT
          * 2. use verifyAdmin middleware
@@ -265,7 +263,7 @@ async function run() {
          *
          */
 
-        app.get("/order-stats", async (req, res) => {
+        app.get("/order-stats", verifyJWT, verifyAdmin, async (req, res) => {
             const pipeline = [
                 {
                     $lookup: {
