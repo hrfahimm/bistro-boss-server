@@ -7,10 +7,38 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
+const nodemailer = require("nodemailer");
 // middleware
 app.use(cors());
 app.use(express.json());
 
+let transporter = nodemailer.createTransport({
+    host: "smtp.sendgrid.net",
+    port: 587,
+    auth: {
+        user: "apikey",
+        pass: process.env.SENDGRID_API_KEY,
+    },
+});
+//send payment  onfirmation email
+const sendPaymentConfirmationEmail = (payment) => {
+    transporter.sendMail(
+        {
+            from: "boss@bistro.com", // verified sender email
+            to: payment.email, // recipient email
+            subject: "Order Confurm", // Subject line
+            text: "Hello world!", // plain text body
+            html: `<div> <h2>payment confurm </h2></div>`, // html body
+        },
+        function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Email sent: " + info.response);
+            }
+        }
+    );
+};
 const verifyJWT = (req, res, next) => {
     const authorization = req.headers.authorization;
     if (!authorization) {
@@ -216,6 +244,9 @@ async function run() {
                 _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
             };
             const deleteResult = await cartCollection.deleteMany(query);
+            //send an email
+            sendPaymentConfirmationEmail(payment);
+
             res.send({ insertResult, deleteResult });
         });
 
